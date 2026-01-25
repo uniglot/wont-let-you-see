@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, dirname, parse } from "path";
 import { homedir } from "os";
 
 export interface Config {
@@ -16,19 +16,47 @@ const DEFAULT_CONFIG: Config = {
 
 const CONFIG_FILENAME = ".wont-let-you-see.json";
 
-function loadJsonConfig(): Partial<Config> {
-  const paths = [
-    join(process.cwd(), CONFIG_FILENAME),
-    join(homedir(), CONFIG_FILENAME),
-  ];
+function findConfigInAncestors(startDir: string): string | null {
+  const home = homedir();
+  let currentDir = startDir;
 
-  for (const configPath of paths) {
+  while (true) {
+    const configPath = join(currentDir, CONFIG_FILENAME);
     if (existsSync(configPath)) {
-      try {
-        const content = readFileSync(configPath, "utf-8");
-        return JSON.parse(content);
-      } catch {}
+      return configPath;
     }
+
+    if (currentDir === home) {
+      break;
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+    currentDir = parentDir;
+  }
+
+  return null;
+}
+
+function loadJsonConfig(): Partial<Config> {
+  // First, search up from cwd to find nearest config
+  const ancestorConfig = findConfigInAncestors(process.cwd());
+  if (ancestorConfig) {
+    try {
+      const content = readFileSync(ancestorConfig, "utf-8");
+      return JSON.parse(content);
+    } catch {}
+  }
+
+  // Fall back to home directory
+  const homeConfig = join(homedir(), CONFIG_FILENAME);
+  if (existsSync(homeConfig)) {
+    try {
+      const content = readFileSync(homeConfig, "utf-8");
+      return JSON.parse(content);
+    } catch {}
   }
 
   return {};
