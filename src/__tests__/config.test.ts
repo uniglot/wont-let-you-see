@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getConfig, resetConfig, isPatternEnabled } from "../config";
-import * as fs from "fs";
 import * as path from "path";
 
-vi.mock("fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof fs>();
-  return {
-    ...actual,
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
-  };
-});
+const { mockExistsSync, mockReadFileSync } = vi.hoisted(() => ({
+  mockExistsSync: vi.fn(),
+  mockReadFileSync: vi.fn(),
+}));
+
+vi.mock("fs", () => ({
+  existsSync: mockExistsSync,
+  readFileSync: mockReadFileSync,
+}));
 
 describe("Config", () => {
   const originalEnv = { ...process.env };
@@ -18,8 +18,8 @@ describe("Config", () => {
 
   beforeEach(() => {
     resetConfig();
-    vi.mocked(fs.existsSync).mockReturnValue(false);
-    vi.mocked(fs.readFileSync).mockReturnValue("{}");
+    mockExistsSync.mockReturnValue(false);
+    mockReadFileSync.mockReturnValue("{}");
   });
 
   afterEach(() => {
@@ -116,10 +116,10 @@ describe("Config", () => {
     it("should find config in parent directory when cwd is subdirectory", () => {
       process.cwd = () => "/project/packages/app";
 
-      vi.mocked(fs.existsSync).mockImplementation((p) => {
+      mockExistsSync.mockImplementation((p: string) => {
         return p === path.join("/project", ".wont-let-you-see.json");
       });
-      vi.mocked(fs.readFileSync).mockReturnValue(
+      mockReadFileSync.mockReturnValue(
         JSON.stringify({ enabled: false, customPatterns: ["secret123"] }),
       );
 
@@ -131,10 +131,10 @@ describe("Config", () => {
     it("should find config in grandparent directory", () => {
       process.cwd = () => "/project/packages/app/src/components";
 
-      vi.mocked(fs.existsSync).mockImplementation((p) => {
+      mockExistsSync.mockImplementation((p: string) => {
         return p === path.join("/project", ".wont-let-you-see.json");
       });
-      vi.mocked(fs.readFileSync).mockReturnValue(
+      mockReadFileSync.mockReturnValue(
         JSON.stringify({ revealedPatterns: ["ipv4"] }),
       );
 
@@ -145,13 +145,13 @@ describe("Config", () => {
     it("should prefer config in closer ancestor over distant ancestor", () => {
       process.cwd = () => "/project/packages/app";
 
-      vi.mocked(fs.existsSync).mockImplementation((p) => {
+      mockExistsSync.mockImplementation((p: string) => {
         return (
           p === path.join("/project/packages/app", ".wont-let-you-see.json") ||
           p === path.join("/project", ".wont-let-you-see.json")
         );
       });
-      vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      mockReadFileSync.mockImplementation((p: string) => {
         if (
           p === path.join("/project/packages/app", ".wont-let-you-see.json")
         ) {
@@ -167,13 +167,13 @@ describe("Config", () => {
     it("should prefer cwd config over parent config", () => {
       process.cwd = () => "/project/subdir";
 
-      vi.mocked(fs.existsSync).mockImplementation((p) => {
+      mockExistsSync.mockImplementation((p: string) => {
         return (
           p === path.join("/project/subdir", ".wont-let-you-see.json") ||
           p === path.join("/project", ".wont-let-you-see.json")
         );
       });
-      vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      mockReadFileSync.mockImplementation((p: string) => {
         if (p === path.join("/project/subdir", ".wont-let-you-see.json")) {
           return JSON.stringify({ enabled: false });
         }
