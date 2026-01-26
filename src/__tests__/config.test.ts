@@ -3,8 +3,8 @@ import { getConfig, resetConfig, isPatternEnabled } from "../config";
 import * as fs from "fs";
 import * as path from "path";
 
-vi.mock("fs", async () => {
-  const actual = await vi.importActual<typeof fs>("fs");
+vi.mock("fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof fs>();
   return {
     ...actual,
     existsSync: vi.fn(),
