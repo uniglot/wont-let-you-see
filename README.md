@@ -92,6 +92,12 @@ The plugin automatically masks output from:
 | `ebs`              | EBS Volume IDs               | `vol-0123456789abcdef0`                                 |
 | `snapshot`         | EBS Snapshot IDs             | `snap-0123456789abcdef0`                                |
 | `eni`              | Network Interface IDs        | `eni-0123456789abcdef0`                                 |
+| `vpc-endpoint`     | VPC Endpoint IDs             | `vpce-0123456789abcdef0`                                |
+| `transit-gateway`  | Transit Gateway IDs          | `tgw-0123456789abcdef0`                                 |
+| `customer-gateway` | Customer Gateway IDs         | `cgw-0123456789abcdef0`                                 |
+| `vpn-gateway`      | VPN Gateway IDs              | `vgw-0123456789abcdef0`                                 |
+| `vpn-connection`   | VPN Connection IDs           | `vpn-0123456789abcdef0`                                 |
+| `ecr-repo`         | ECR Repository URIs          | `123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo`  |
 
 ### Kubernetes Resources (EKS)
 

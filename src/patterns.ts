@@ -14,7 +14,13 @@ export const AWS_PATTERNS = {
   ebs: /^vol-[0-9a-f]{8,17}$/,
   snapshot: /^snap-[0-9a-f]{8,17}$/,
   eni: /^eni-[0-9a-f]{8,17}$/,
+  vpcEndpoint: /^vpce-[0-9a-f]{8,17}$/,
+  transitGateway: /^tgw-[0-9a-f]{8,17}$/,
+  customerGateway: /^cgw-[0-9a-f]{8,17}$/,
+  vpnGateway: /^vgw-[0-9a-f]{8,17}$/,
+  vpnConnection: /^vpn-[0-9a-f]{8,17}$/,
   accountId: /"(?:OwnerId|AccountId|Owner|account_id)":\s*"(\d{12})"/,
+  ecrRepoUri: /^\d{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com\/[a-z0-9._\/-]+$/,
   accessKeyId:
     /(?:^|[^A-Z0-9])(?:AKIA|ABIA|ACCA|ASIA)[A-Z0-9]{16}(?:[^A-Z0-9]|$)/,
 } as const;
@@ -35,11 +41,4 @@ export const COMMON_PATTERNS = {
   // Generic API keys/tokens (contextual - in JSON/YAML fields)
   apiKeyField:
     /"(?:api_key|apiKey|secret_key|secretKey|access_token|auth_token|password|token)":\s*"([^"]+)"/,
-} as const;
-
-// Combined for backward compatibility
-export const PATTERNS = {
-  ...AWS_PATTERNS,
-  ...K8S_PATTERNS,
-  ...COMMON_PATTERNS,
 } as const;

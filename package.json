@@ -1,6 +1,6 @@
 {
   "name": "@uniglot/wont-let-you-see",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "OpenCode plugin that masks sensitive cloud infrastructure data (AWS, Kubernetes) from LLMs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
