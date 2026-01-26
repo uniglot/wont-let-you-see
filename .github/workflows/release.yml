@@ -1,0 +1,20 @@
+name: Draft Release
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: pkg
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: v${{ steps.pkg.outputs.version }}
+          draft: true
+          generate_release_notes: true
