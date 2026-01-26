@@ -1,11 +1,32 @@
-import { existsSync, readFileSync } from "fs";
-import { join, dirname, parse } from "path";
+import {
+  existsSync as nodeExistsSync,
+  readFileSync as nodeReadFileSync,
+} from "fs";
+import { join, dirname } from "path";
 import { homedir } from "os";
 
 export interface Config {
   enabled: boolean;
   revealedPatterns: string[];
   customPatterns: string[];
+}
+
+interface FsAdapter {
+  existsSync: (path: string) => boolean;
+  readFileSync: (path: string, encoding: "utf-8") => string;
+}
+
+let fsAdapter: FsAdapter = {
+  existsSync: nodeExistsSync,
+  readFileSync: nodeReadFileSync,
+};
+
+export function setFsAdapter(adapter: FsAdapter): void {
+  fsAdapter = adapter;
+}
+
+export function resetFsAdapter(): void {
+  fsAdapter = { existsSync: nodeExistsSync, readFileSync: nodeReadFileSync };
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -22,7 +43,7 @@ function findConfigInAncestors(startDir: string): string | null {
 
   while (true) {
     const configPath = join(currentDir, CONFIG_FILENAME);
-    if (existsSync(configPath)) {
+    if (fsAdapter.existsSync(configPath)) {
       return configPath;
     }
 
@@ -41,20 +62,18 @@ function findConfigInAncestors(startDir: string): string | null {
 }
 
 function loadJsonConfig(): Partial<Config> {
-  // First, search up from cwd to find nearest config
   const ancestorConfig = findConfigInAncestors(process.cwd());
   if (ancestorConfig) {
     try {
-      const content = readFileSync(ancestorConfig, "utf-8");
+      const content = fsAdapter.readFileSync(ancestorConfig, "utf-8");
       return JSON.parse(content);
     } catch {}
   }
 
-  // Fall back to home directory
   const homeConfig = join(homedir(), CONFIG_FILENAME);
-  if (existsSync(homeConfig)) {
+  if (fsAdapter.existsSync(homeConfig)) {
     try {
-      const content = readFileSync(homeConfig, "utf-8");
+      const content = fsAdapter.readFileSync(homeConfig, "utf-8");
       return JSON.parse(content);
     } catch {}
   }

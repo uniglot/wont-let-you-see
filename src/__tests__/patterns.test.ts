@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  AWS_PATTERNS,
-  K8S_PATTERNS,
-  COMMON_PATTERNS,
-  PATTERNS,
-} from "../patterns";
+import { AWS_PATTERNS, K8S_PATTERNS, COMMON_PATTERNS } from "../patterns";
 
 describe("AWS_PATTERNS", () => {
   describe("ARN", () => {
@@ -62,6 +57,96 @@ describe("AWS_PATTERNS", () => {
 
     it("should match snapshot", () => {
       expect(AWS_PATTERNS.snapshot.test("snap-0123456789abcdef0")).toBe(true);
+    });
+  });
+
+  describe("VPC networking resources", () => {
+    it("should match vpc endpoint", () => {
+      expect(AWS_PATTERNS.vpcEndpoint.test("vpce-0123456789abcdef0")).toBe(
+        true,
+      );
+    });
+
+    it("should match transit gateway", () => {
+      expect(AWS_PATTERNS.transitGateway.test("tgw-0123456789abcdef0")).toBe(
+        true,
+      );
+    });
+
+    it("should match customer gateway", () => {
+      expect(AWS_PATTERNS.customerGateway.test("cgw-0123456789abcdef0")).toBe(
+        true,
+      );
+    });
+
+    it("should match vpn gateway", () => {
+      expect(AWS_PATTERNS.vpnGateway.test("vgw-0123456789abcdef0")).toBe(true);
+    });
+
+    it("should match vpn connection", () => {
+      expect(AWS_PATTERNS.vpnConnection.test("vpn-0123456789abcdef0")).toBe(
+        true,
+      );
+    });
+
+    it("should NOT match invalid vpc endpoint", () => {
+      expect(AWS_PATTERNS.vpcEndpoint.test("vpce-invalid")).toBe(false);
+    });
+  });
+
+  describe("ECR resources", () => {
+    it("should match ECR repo URI", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo",
+        ),
+      ).toBe(true);
+    });
+
+    it("should match ECR repo URI with nested path", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "123456789012.dkr.ecr.eu-central-1.amazonaws.com/org/app/service",
+        ),
+      ).toBe(true);
+    });
+
+    it("should match ECR repo URI with dots and underscores", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/my_repo.name",
+        ),
+      ).toBe(true);
+    });
+
+    it("should NOT match invalid ECR URI (wrong account ID length)", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "12345.dkr.ecr.us-west-2.amazonaws.com/my-repo",
+        ),
+      ).toBe(false);
+    });
+
+    it("should NOT match non-ECR docker registry", () => {
+      expect(AWS_PATTERNS.ecrRepoUri.test("docker.io/library/nginx")).toBe(
+        false,
+      );
+    });
+
+    it("should match ECR repo URI with masked account ID", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "#(custom-1).dkr.ecr.us-west-2.amazonaws.com/my-repo",
+        ),
+      ).toBe(true);
+    });
+
+    it("should match ECR repo URI with masked account ID (higher number)", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "#(custom-123).dkr.ecr.us-east-1.amazonaws.com/app/service",
+        ),
+      ).toBe(true);
     });
   });
 
@@ -188,28 +273,18 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC
   });
 });
 
-describe("PATTERNS (combined)", () => {
-  it("should include all AWS patterns", () => {
-    expect(PATTERNS.vpc).toBe(AWS_PATTERNS.vpc);
-    expect(PATTERNS.arn).toBe(AWS_PATTERNS.arn);
-  });
-
-  it("should include all K8S patterns", () => {
-    expect(PATTERNS.serviceAccountToken).toBe(K8S_PATTERNS.serviceAccountToken);
-  });
-
-  it("should include all common patterns", () => {
-    expect(PATTERNS.ipv4).toBe(COMMON_PATTERNS.ipv4);
-    expect(PATTERNS.privateKey).toBe(COMMON_PATTERNS.privateKey);
-  });
-});
-
 describe("ReDoS safety", () => {
   it("should handle pathological input quickly", () => {
     const pathological = "a".repeat(1000) + "b";
     const start = performance.now();
 
-    for (const pattern of Object.values(PATTERNS)) {
+    const allPatterns = [
+      ...Object.values(AWS_PATTERNS),
+      ...Object.values(K8S_PATTERNS),
+      ...Object.values(COMMON_PATTERNS),
+    ];
+
+    for (const pattern of allPatterns) {
       pattern.test(pathological);
     }
 
