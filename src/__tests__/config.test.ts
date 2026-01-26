@@ -1,16 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { getConfig, resetConfig, isPatternEnabled } from "../config";
+import {
+  getConfig,
+  resetConfig,
+  isPatternEnabled,
+  setFsAdapter,
+  resetFsAdapter,
+} from "../config";
 import * as path from "path";
 
-const { mockExistsSync, mockReadFileSync } = vi.hoisted(() => ({
-  mockExistsSync: vi.fn(),
-  mockReadFileSync: vi.fn(),
-}));
-
-vi.mock("fs", () => ({
-  existsSync: mockExistsSync,
-  readFileSync: mockReadFileSync,
-}));
+const mockExistsSync = vi.fn();
+const mockReadFileSync = vi.fn();
 
 describe("Config", () => {
   const originalEnv = { ...process.env };
@@ -18,6 +17,10 @@ describe("Config", () => {
 
   beforeEach(() => {
     resetConfig();
+    setFsAdapter({
+      existsSync: mockExistsSync,
+      readFileSync: mockReadFileSync,
+    });
     mockExistsSync.mockReturnValue(false);
     mockReadFileSync.mockReturnValue("{}");
   });
@@ -26,6 +29,7 @@ describe("Config", () => {
     process.env = { ...originalEnv };
     process.cwd = originalCwd;
     resetConfig();
+    resetFsAdapter();
     vi.clearAllMocks();
   });
 
