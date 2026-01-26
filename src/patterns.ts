@@ -20,7 +20,8 @@ export const AWS_PATTERNS = {
   vpnGateway: /^vgw-[0-9a-f]{8,17}$/,
   vpnConnection: /^vpn-[0-9a-f]{8,17}$/,
   accountId: /"(?:OwnerId|AccountId|Owner|account_id)":\s*"(\d{12})"/,
-  ecrRepoUri: /^\d{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com\/[a-z0-9._\/-]+$/,
+  ecrRepoUri:
+    /^(?:\d{12}|#\(custom-\d+\))\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com\/[a-z0-9._\/-]+$/,
   accessKeyId:
     /(?:^|[^A-Z0-9])(?:AKIA|ABIA|ACCA|ASIA)[A-Z0-9]{16}(?:[^A-Z0-9]|$)/,
 } as const;

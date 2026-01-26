@@ -132,6 +132,22 @@ describe("AWS_PATTERNS", () => {
         false,
       );
     });
+
+    it("should match ECR repo URI with masked account ID", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "#(custom-1).dkr.ecr.us-west-2.amazonaws.com/my-repo",
+        ),
+      ).toBe(true);
+    });
+
+    it("should match ECR repo URI with masked account ID (higher number)", () => {
+      expect(
+        AWS_PATTERNS.ecrRepoUri.test(
+          "#(custom-123).dkr.ecr.us-east-1.amazonaws.com/app/service",
+        ),
+      ).toBe(true);
+    });
   });
 
   describe("Account ID (contextual)", () => {
