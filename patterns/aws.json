@@ -6,6 +6,7 @@
     "contextual": true
   },
   "access-key-id": "(?:^|[^A-Z0-9])(?:AKIA|ABIA|ACCA|ASIA)[A-Z0-9]{16}(?:[^A-Z0-9]|$)",
+  "secret-access-key": "(?:^|[^A-Za-z0-9+/])[A-Za-z0-9+/]{40}(?:[^A-Za-z0-9+/]|$)",
   "vpc": "^vpc-[0-9a-f]{8,17}$",
   "subnet": "^subnet-[0-9a-f]{8,17}$",
   "security-group": "^sg-[0-9a-f]{8,17}$",
