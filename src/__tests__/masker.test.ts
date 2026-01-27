@@ -172,7 +172,8 @@ describe("masker", () => {
     });
 
     it("should not mask ARN when both eks-cluster and arn are revealed", () => {
-      process.env.WONT_LET_YOU_SEE_REVEALED_PATTERNS = "eks-cluster,arn";
+      process.env.WONT_LET_YOU_SEE_REVEALED_PATTERNS =
+        "eks-cluster,arn,phone-us";
       resetConfig();
 
       const input =

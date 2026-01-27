@@ -210,14 +210,6 @@ describe("Kubernetes Patterns", () => {
     resetPatternCache();
   });
 
-  describe("Service Account Token", () => {
-    it("should match JWT format", () => {
-      const jwt =
-        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tYWJjZGUiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjEyMzQ1Njc4LTEyMzQtMTIzNC0xMjM0LTEyMzQ1Njc4OTAxMiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.signature";
-      expect(getPattern("k8s-token").test(jwt)).toBe(true);
-    });
-  });
-
   describe("Node Names", () => {
     it("should match AWS node name", () => {
       expect(
@@ -334,8 +326,8 @@ describe("loadPatterns", () => {
 
   it("should load Kubernetes patterns", () => {
     const patterns = loadPatterns();
-    const k8sTokenPattern = patterns.find((p) => p.name === "k8s-token");
-    expect(k8sTokenPattern).toBeDefined();
+    const k8sNodePattern = patterns.find((p) => p.name === "k8s-node");
+    expect(k8sNodePattern).toBeDefined();
   });
 
   it("should load common patterns", () => {

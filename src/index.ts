@@ -30,7 +30,16 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         return;
       }
 
+      // Mask output sent to LLM
       output.output = mask(hookInput.sessionID, output.output);
+
+      // Also mask TUI display (metadata.output is used as fallback in TUI rendering)
+      if (output.metadata?.output) {
+        output.metadata.output = mask(
+          hookInput.sessionID,
+          output.metadata.output,
+        );
+      }
     },
 
     "chat.message": async (hookInput, output) => {
