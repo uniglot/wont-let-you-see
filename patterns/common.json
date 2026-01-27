@@ -1,0 +1,8 @@
+{
+  "private-key": "-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----[\\s\\S]*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----",
+  "api-key": {
+    "pattern": "\"(?:api_key|apiKey|secret_key|secretKey|access_token|auth_token|password|token)\":\\s*\"([^\"]+)\"",
+    "contextual": true
+  },
+  "ipv4": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+}

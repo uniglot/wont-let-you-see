@@ -28,11 +28,11 @@ Configure via environment variables or JSON config file. Environment variables t
 
 #### Environment Variables
 
-| Variable                             | Description                                     | Default |
-| ------------------------------------ | ----------------------------------------------- | ------- |
-| `WONT_LET_YOU_SEE_ENABLED`           | Set to `false` or `0` to disable masking        | `true`  |
-| `WONT_LET_YOU_SEE_REVEALED_PATTERNS` | Comma-separated list of pattern types to reveal | (none)  |
-| `WONT_LET_YOU_SEE_CUSTOM_PATTERNS`   | Comma-separated list of custom strings to mask  | (none)  |
+| Variable                             | Description                                                                | Default |
+| ------------------------------------ | -------------------------------------------------------------------------- | ------- |
+| `WONT_LET_YOU_SEE_ENABLED`           | Set to `false` or `0` to disable masking                                   | `true`  |
+| `WONT_LET_YOU_SEE_REVEALED_PATTERNS` | Comma-separated list of pattern types to reveal                            | (none)  |
+| `WONT_LET_YOU_SEE_CUSTOM_PATTERNS`   | Comma-separated list of custom patterns to mask (supports `regex:` prefix) | (none)  |
 
 #### JSON Config File
 
@@ -48,6 +48,18 @@ Create `.wont-let-you-see.json` in your project root, `~/.config/opencode/`, or 
 
 > **Tip**: Add your AWS account ID to `customPatterns`. The built-in `account-id` pattern only matches contextual fields like `"OwnerId": "123456789012"`, but may miss bare account IDs in terraform output or other contexts.
 
+Custom patterns support both literal strings and regular expressions. Prefix with `regex:` to use regex:
+
+```json
+{
+  "customPatterns": [
+    "123456789012",
+    "my-secret-value",
+    "regex:secret-[a-z]{3}-\\d{4}"
+  ]
+}
+```
+
 #### Examples
 
 ```bash
@@ -59,6 +71,9 @@ WONT_LET_YOU_SEE_REVEALED_PATTERNS=eks-cluster,ipv4 opencode
 
 # Mask custom values (e.g., AWS account ID)
 WONT_LET_YOU_SEE_CUSTOM_PATTERNS=123456789012,my-secret opencode
+
+# Mask with regex patterns
+WONT_LET_YOU_SEE_CUSTOM_PATTERNS="regex:token-[A-Z]{8},my-literal-secret" opencode
 ```
 
 ## Supported Commands
@@ -147,9 +162,49 @@ What was the actual VPC ID from the last command?
 
 The LLM should only know the token (e.g., `#(vpc-1)`), not the real value.
 
+## Contributing Patterns
+
+Patterns are defined in JSON files under the `patterns/` directory:
+
+- `patterns/aws.json` - AWS resource patterns
+- `patterns/kubernetes.json` - Kubernetes patterns
+- `patterns/common.json` - Common patterns (IPs, keys, etc.)
+
+You can request to add new files for resources of different categories.
+
+### Pattern Format
+
+Each pattern can be defined as:
+
+```json
+{
+  "pattern-name": "^regex-pattern$",
+
+  "contextual-pattern": {
+    "pattern": "\"field\":\\s*\"(captured-value)\"",
+    "contextual": true
+  },
+
+  "literal-match": {
+    "exact": "literal-string-to-match"
+  }
+}
+```
+
+- **Simple regex**: Just a string with the regex pattern
+- **Contextual**: For patterns where only a captured group should be masked (e.g., JSON fields)
+- **Exact match**: For literal strings that should be escaped
+
+### Adding New Patterns
+
+1. Fork the repository
+2. Add your pattern to the appropriate JSON file
+3. Add tests in `src/__tests__/patterns.test.ts`
+4. Submit a pull request
+
 ## Limitations
 
-- **AWS only**: Currently supports AWS. GCP and Azure are not yet supported.
+- **AWS only**: Currently supports AWS. GCP and Azure are not yet supported. Do you need them? Feel free to contribute!
 - **S3 Buckets**: Bucket names are not masked (often public/intentional).
 - **Account IDs**: Only masked in contextual JSON fields. Add to `customPatterns` for full coverage.
 - **UI display**: The UI shows original values (OpenCode limitation).
