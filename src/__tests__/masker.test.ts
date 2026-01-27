@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { mask, unmask } from "../masker";
 import { createMapping } from "../mapping";
 import { resetConfig } from "../config";
+import { resetPatternCache } from "../patterns";
 
 describe("masker", () => {
   const sessionId = "test-session-masker";
@@ -10,12 +11,14 @@ describe("masker", () => {
   beforeEach(() => {
     process.env.WONT_LET_YOU_SEE_REVEALED_PATTERNS = "";
     resetConfig();
+    resetPatternCache();
     createMapping(sessionId);
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
     resetConfig();
+    resetPatternCache();
   });
 
   describe("mask()", () => {
@@ -179,6 +182,67 @@ describe("masker", () => {
       expect(result).toContain(
         "arn:aws:eks:us-east-1:123456789012:cluster/my-cluster",
       );
+    });
+  });
+
+  describe("customPatterns with regex support", () => {
+    it("should mask exact string patterns", () => {
+      process.env.WONT_LET_YOU_SEE_CUSTOM_PATTERNS = "my-secret-value";
+      resetConfig();
+
+      const input = "Secret: my-secret-value";
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/Secret: #\(custom-\d+\)/);
+      expect(result).not.toContain("my-secret-value");
+    });
+
+    it("should mask regex patterns with regex: prefix", () => {
+      process.env.WONT_LET_YOU_SEE_CUSTOM_PATTERNS =
+        "regex:secret-[a-z]{3}-\\d{4}";
+      resetConfig();
+
+      const input = "Keys: secret-abc-1234, secret-xyz-5678";
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/#\(custom-\d+\)/);
+      expect(result).not.toContain("secret-abc-1234");
+      expect(result).not.toContain("secret-xyz-5678");
+    });
+
+    it("should treat patterns without regex: prefix as literal strings", () => {
+      process.env.WONT_LET_YOU_SEE_CUSTOM_PATTERNS = "literal-value";
+      resetConfig();
+
+      const input = "Value: literal-value, Other: literal-values";
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/Value: #\(custom-\d+\)/);
+      expect(result).toContain("literal-values");
+    });
+
+    it("should round-trip custom regex patterns", () => {
+      process.env.WONT_LET_YOU_SEE_CUSTOM_PATTERNS = "regex:token-[A-Z]{8}";
+      resetConfig();
+
+      const original = "Auth: token-ABCDEFGH";
+      const masked = mask(sessionId, original);
+      const unmasked = unmask(sessionId, masked);
+
+      expect(unmasked).toBe(original);
+    });
+
+    it("should support multiple custom patterns including regex", () => {
+      process.env.WONT_LET_YOU_SEE_CUSTOM_PATTERNS =
+        "exact-secret,regex:pattern-\\d+";
+      resetConfig();
+
+      const input = "Secrets: exact-secret, pattern-123, pattern-456";
+      const result = mask(sessionId, input);
+
+      expect(result).not.toContain("exact-secret");
+      expect(result).not.toContain("pattern-123");
+      expect(result).not.toContain("pattern-456");
     });
   });
 

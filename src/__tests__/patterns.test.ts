@@ -1,21 +1,31 @@
-import { describe, it, expect } from "vitest";
-import { AWS_PATTERNS, K8S_PATTERNS, COMMON_PATTERNS } from "../patterns";
+import { describe, it, expect, beforeEach } from "vitest";
+import { loadPatterns, resetPatternCache, getPatternByName } from "../patterns";
 
-describe("AWS_PATTERNS", () => {
+function getPattern(name: string) {
+  const p = getPatternByName(name);
+  if (!p) throw new Error(`Pattern '${name}' not found`);
+  return p.pattern;
+}
+
+describe("AWS Patterns", () => {
+  beforeEach(() => {
+    resetPatternCache();
+  });
+
   describe("ARN", () => {
     it("should match aws partition", () => {
       expect(
-        AWS_PATTERNS.arn.test("arn:aws:iam::123456789012:user/admin"),
+        getPattern("arn").test("arn:aws:iam::123456789012:user/admin"),
       ).toBe(true);
     });
 
     it("should match aws-cn partition", () => {
-      expect(AWS_PATTERNS.arn.test("arn:aws-cn:s3:::my-bucket")).toBe(true);
+      expect(getPattern("arn").test("arn:aws-cn:s3:::my-bucket")).toBe(true);
     });
 
     it("should match aws-us-gov partition", () => {
       expect(
-        AWS_PATTERNS.arn.test(
+        getPattern("arn").test(
           "arn:aws-us-gov:ec2:us-gov-west-1:123456789012:instance/i-123",
         ),
       ).toBe(true);
@@ -24,80 +34,86 @@ describe("AWS_PATTERNS", () => {
 
   describe("VPC resources", () => {
     it("should match vpc", () => {
-      expect(AWS_PATTERNS.vpc.test("vpc-0123456789abcdef0")).toBe(true);
+      expect(getPattern("vpc").test("vpc-0123456789abcdef0")).toBe(true);
     });
 
     it("should match subnet", () => {
-      expect(AWS_PATTERNS.subnet.test("subnet-0123456789abcdef0")).toBe(true);
+      expect(getPattern("subnet").test("subnet-0123456789abcdef0")).toBe(true);
     });
 
     it("should match security group", () => {
-      expect(AWS_PATTERNS.securityGroup.test("sg-0123456789abcdef0")).toBe(
+      expect(getPattern("security-group").test("sg-0123456789abcdef0")).toBe(
         true,
       );
     });
 
     it("should match nat gateway", () => {
-      expect(AWS_PATTERNS.natGateway.test("nat-0123456789abcdef0")).toBe(true);
+      expect(getPattern("nat-gateway").test("nat-0123456789abcdef0")).toBe(
+        true,
+      );
     });
 
     it("should match network acl", () => {
-      expect(AWS_PATTERNS.networkAcl.test("acl-0123456789abcdef0")).toBe(true);
+      expect(getPattern("network-acl").test("acl-0123456789abcdef0")).toBe(
+        true,
+      );
     });
 
     it("should match eni", () => {
-      expect(AWS_PATTERNS.eni.test("eni-0123456789abcdef0")).toBe(true);
+      expect(getPattern("eni").test("eni-0123456789abcdef0")).toBe(true);
     });
   });
 
   describe("EC2 resources", () => {
     it("should match ebs volume", () => {
-      expect(AWS_PATTERNS.ebs.test("vol-0123456789abcdef0")).toBe(true);
+      expect(getPattern("ebs").test("vol-0123456789abcdef0")).toBe(true);
     });
 
     it("should match snapshot", () => {
-      expect(AWS_PATTERNS.snapshot.test("snap-0123456789abcdef0")).toBe(true);
+      expect(getPattern("snapshot").test("snap-0123456789abcdef0")).toBe(true);
     });
   });
 
   describe("VPC networking resources", () => {
     it("should match vpc endpoint", () => {
-      expect(AWS_PATTERNS.vpcEndpoint.test("vpce-0123456789abcdef0")).toBe(
+      expect(getPattern("vpc-endpoint").test("vpce-0123456789abcdef0")).toBe(
         true,
       );
     });
 
     it("should match transit gateway", () => {
-      expect(AWS_PATTERNS.transitGateway.test("tgw-0123456789abcdef0")).toBe(
+      expect(getPattern("transit-gateway").test("tgw-0123456789abcdef0")).toBe(
         true,
       );
     });
 
     it("should match customer gateway", () => {
-      expect(AWS_PATTERNS.customerGateway.test("cgw-0123456789abcdef0")).toBe(
+      expect(getPattern("customer-gateway").test("cgw-0123456789abcdef0")).toBe(
         true,
       );
     });
 
     it("should match vpn gateway", () => {
-      expect(AWS_PATTERNS.vpnGateway.test("vgw-0123456789abcdef0")).toBe(true);
+      expect(getPattern("vpn-gateway").test("vgw-0123456789abcdef0")).toBe(
+        true,
+      );
     });
 
     it("should match vpn connection", () => {
-      expect(AWS_PATTERNS.vpnConnection.test("vpn-0123456789abcdef0")).toBe(
+      expect(getPattern("vpn-connection").test("vpn-0123456789abcdef0")).toBe(
         true,
       );
     });
 
     it("should NOT match invalid vpc endpoint", () => {
-      expect(AWS_PATTERNS.vpcEndpoint.test("vpce-invalid")).toBe(false);
+      expect(getPattern("vpc-endpoint").test("vpce-invalid")).toBe(false);
     });
   });
 
   describe("ECR resources", () => {
     it("should match ECR repo URI", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo",
         ),
       ).toBe(true);
@@ -105,7 +121,7 @@ describe("AWS_PATTERNS", () => {
 
     it("should match ECR repo URI with nested path", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "123456789012.dkr.ecr.eu-central-1.amazonaws.com/org/app/service",
         ),
       ).toBe(true);
@@ -113,7 +129,7 @@ describe("AWS_PATTERNS", () => {
 
     it("should match ECR repo URI with dots and underscores", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/my_repo.name",
         ),
       ).toBe(true);
@@ -121,21 +137,21 @@ describe("AWS_PATTERNS", () => {
 
     it("should NOT match invalid ECR URI (wrong account ID length)", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "12345.dkr.ecr.us-west-2.amazonaws.com/my-repo",
         ),
       ).toBe(false);
     });
 
     it("should NOT match non-ECR docker registry", () => {
-      expect(AWS_PATTERNS.ecrRepoUri.test("docker.io/library/nginx")).toBe(
+      expect(getPattern("ecr-repo").test("docker.io/library/nginx")).toBe(
         false,
       );
     });
 
     it("should match ECR repo URI with masked account ID", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "#(custom-1).dkr.ecr.us-west-2.amazonaws.com/my-repo",
         ),
       ).toBe(true);
@@ -143,7 +159,7 @@ describe("AWS_PATTERNS", () => {
 
     it("should match ECR repo URI with masked account ID (higher number)", () => {
       expect(
-        AWS_PATTERNS.ecrRepoUri.test(
+        getPattern("ecr-repo").test(
           "#(custom-123).dkr.ecr.us-east-1.amazonaws.com/app/service",
         ),
       ).toBe(true);
@@ -152,56 +168,60 @@ describe("AWS_PATTERNS", () => {
 
   describe("Account ID (contextual)", () => {
     it("should match OwnerId field", () => {
-      expect(AWS_PATTERNS.accountId.test('"OwnerId": "123456789012"')).toBe(
+      expect(getPattern("account-id").test('"OwnerId": "123456789012"')).toBe(
         true,
       );
     });
 
     it("should match account_id field (terraform style)", () => {
-      expect(AWS_PATTERNS.accountId.test('"account_id": "123456789012"')).toBe(
-        true,
-      );
+      expect(
+        getPattern("account-id").test('"account_id": "123456789012"'),
+      ).toBe(true);
     });
 
     it("should NOT match bare number", () => {
-      expect(AWS_PATTERNS.accountId.test("123456789012")).toBe(false);
+      expect(getPattern("account-id").test("123456789012")).toBe(false);
     });
   });
 
   describe("Access Key ID", () => {
     it("should match AKIA prefix", () => {
-      expect(AWS_PATTERNS.accessKeyId.test(" AKIAIOSFODNN7EXAMPLE ")).toBe(
+      expect(getPattern("access-key-id").test(" AKIAIOSFODNN7EXAMPLE ")).toBe(
         true,
       );
     });
 
     it("should match ASIA prefix (temporary)", () => {
-      expect(AWS_PATTERNS.accessKeyId.test(" ASIAISAMPLEKEYID1234 ")).toBe(
+      expect(getPattern("access-key-id").test(" ASIAISAMPLEKEYID1234 ")).toBe(
         true,
       );
     });
 
     it("should NOT match random string", () => {
-      expect(AWS_PATTERNS.accessKeyId.test("RANDOMSTRING12345678")).toBe(false);
+      expect(getPattern("access-key-id").test("RANDOMSTRING12345678")).toBe(
+        false,
+      );
     });
   });
 });
 
-describe("K8S_PATTERNS", () => {
+describe("Kubernetes Patterns", () => {
+  beforeEach(() => {
+    resetPatternCache();
+  });
+
   describe("Service Account Token", () => {
     it("should match JWT format", () => {
       const jwt =
         "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tYWJjZGUiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjEyMzQ1Njc4LTEyMzQtMTIzNC0xMjM0LTEyMzQ1Njc4OTAxMiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.signature";
-      expect(K8S_PATTERNS.serviceAccountToken.test(jwt)).toBe(true);
+      expect(getPattern("k8s-token").test(jwt)).toBe(true);
     });
   });
 
   describe("Node Names", () => {
     it("should match AWS node name", () => {
       expect(
-        K8S_PATTERNS.nodeNameAws.test(
-          "ip-10-0-1-123.us-west-2.compute.internal",
-        ),
+        getPattern("k8s-node").test("ip-10-0-1-123.us-west-2.compute.internal"),
       ).toBe(true);
     });
   });
@@ -209,7 +229,7 @@ describe("K8S_PATTERNS", () => {
   describe("Cluster Endpoints", () => {
     it("should match EKS endpoint", () => {
       expect(
-        K8S_PATTERNS.clusterEndpoint.test(
+        getPattern("k8s-endpoint").test(
           "https://ABCDEF1234567890ABCD.us-west-2.eks.amazonaws.com",
         ),
       ).toBe(true);
@@ -217,14 +237,18 @@ describe("K8S_PATTERNS", () => {
   });
 });
 
-describe("COMMON_PATTERNS", () => {
+describe("Common Patterns", () => {
+  beforeEach(() => {
+    resetPatternCache();
+  });
+
   describe("IPv4", () => {
     it("should match IPv4", () => {
-      expect(COMMON_PATTERNS.ipv4.test("192.168.1.1")).toBe(true);
+      expect(getPattern("ipv4").test("192.168.1.1")).toBe(true);
     });
 
     it("should not match CIDR notation", () => {
-      expect(COMMON_PATTERNS.ipv4.test("10.0.0.0/8")).toBe(false);
+      expect(getPattern("ipv4").test("10.0.0.0/8")).toBe(false);
     });
   });
 
@@ -238,16 +262,16 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC
 -----END PRIVATE KEY-----`;
 
     it("should match entire RSA private key block", () => {
-      expect(COMMON_PATTERNS.privateKey.test(rsaKey)).toBe(true);
+      expect(getPattern("private-key").test(rsaKey)).toBe(true);
     });
 
     it("should match entire generic private key block", () => {
-      expect(COMMON_PATTERNS.privateKey.test(genericKey)).toBe(true);
+      expect(getPattern("private-key").test(genericKey)).toBe(true);
     });
 
     it("should not match header only", () => {
       expect(
-        COMMON_PATTERNS.privateKey.test("-----BEGIN RSA PRIVATE KEY-----"),
+        getPattern("private-key").test("-----BEGIN RSA PRIVATE KEY-----"),
       ).toBe(false);
     });
   });
@@ -255,39 +279,89 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC
   describe("API Key Field (contextual)", () => {
     it("should match api_key field", () => {
       expect(
-        COMMON_PATTERNS.apiKeyField.test('"api_key": "sk-1234567890abcdef"'),
+        getPattern("api-key").test('"api_key": "sk-1234567890abcdef"'),
       ).toBe(true);
     });
 
     it("should match password field", () => {
-      expect(
-        COMMON_PATTERNS.apiKeyField.test('"password": "supersecret123"'),
-      ).toBe(true);
+      expect(getPattern("api-key").test('"password": "supersecret123"')).toBe(
+        true,
+      );
     });
 
     it("should match token field", () => {
-      expect(
-        COMMON_PATTERNS.apiKeyField.test('"token": "ghp_xxxxxxxxxxxx"'),
-      ).toBe(true);
+      expect(getPattern("api-key").test('"token": "ghp_xxxxxxxxxxxx"')).toBe(
+        true,
+      );
     });
   });
 });
 
 describe("ReDoS safety", () => {
+  beforeEach(() => {
+    resetPatternCache();
+  });
+
   it("should handle pathological input quickly", () => {
     const pathological = "a".repeat(1000) + "b";
     const start = performance.now();
 
-    const allPatterns = [
-      ...Object.values(AWS_PATTERNS),
-      ...Object.values(K8S_PATTERNS),
-      ...Object.values(COMMON_PATTERNS),
-    ];
-
-    for (const pattern of allPatterns) {
+    const allPatterns = loadPatterns();
+    for (const { pattern } of allPatterns) {
       pattern.test(pathological);
     }
 
     expect(performance.now() - start).toBeLessThan(100);
+  });
+});
+
+describe("loadPatterns", () => {
+  beforeEach(() => {
+    resetPatternCache();
+  });
+
+  it("should load patterns from JSON files", () => {
+    const patterns = loadPatterns();
+    expect(patterns.length).toBeGreaterThan(0);
+  });
+
+  it("should load AWS patterns", () => {
+    const patterns = loadPatterns();
+    const vpcPattern = patterns.find((p) => p.name === "vpc");
+    expect(vpcPattern).toBeDefined();
+    expect(vpcPattern!.pattern.test("vpc-1234567890abcdef0")).toBe(true);
+  });
+
+  it("should load Kubernetes patterns", () => {
+    const patterns = loadPatterns();
+    const k8sTokenPattern = patterns.find((p) => p.name === "k8s-token");
+    expect(k8sTokenPattern).toBeDefined();
+  });
+
+  it("should load common patterns", () => {
+    const patterns = loadPatterns();
+    const ipv4Pattern = patterns.find((p) => p.name === "ipv4");
+    expect(ipv4Pattern).toBeDefined();
+    expect(ipv4Pattern!.pattern.test("192.168.1.1")).toBe(true);
+  });
+
+  it("should mark contextual patterns correctly", () => {
+    const patterns = loadPatterns();
+    const accountIdPattern = patterns.find((p) => p.name === "account-id");
+    expect(accountIdPattern).toBeDefined();
+    expect(accountIdPattern!.isContextual).toBe(true);
+  });
+
+  it("should cache patterns after first load", () => {
+    const patterns1 = loadPatterns();
+    const patterns2 = loadPatterns();
+    expect(patterns1).toBe(patterns2);
+  });
+
+  it("should reset cache on resetPatternCache()", () => {
+    const patterns1 = loadPatterns();
+    resetPatternCache();
+    const patterns2 = loadPatterns();
+    expect(patterns1).not.toBe(patterns2);
   });
 });

@@ -1,0 +1,27 @@
+{
+  "eks-cluster": "^arn:(?:aws|aws-cn|aws-us-gov):eks:[a-z0-9-]+:[0-9]{12}:cluster\\/.+$",
+  "arn": "^arn:(?:aws|aws-cn|aws-us-gov):[a-zA-Z0-9-]+:[a-z0-9-]*:(?:[0-9]{12})?:.+$",
+  "account-id": {
+    "pattern": "\"(?:OwnerId|AccountId|Owner|account_id)\":\\s*\"(\\d{12})\"",
+    "contextual": true
+  },
+  "access-key-id": "(?:^|[^A-Z0-9])(?:AKIA|ABIA|ACCA|ASIA)[A-Z0-9]{16}(?:[^A-Z0-9]|$)",
+  "vpc": "^vpc-[0-9a-f]{8,17}$",
+  "subnet": "^subnet-[0-9a-f]{8,17}$",
+  "security-group": "^sg-[0-9a-f]{8,17}$",
+  "internet-gateway": "^igw-[0-9a-f]{8,17}$",
+  "route-table": "^rtb-[0-9a-f]{8,17}$",
+  "nat-gateway": "^nat-[0-9a-f]{8,17}$",
+  "network-acl": "^acl-[0-9a-f]{8,17}$",
+  "eni": "^eni-[0-9a-f]{8,17}$",
+  "vpc-endpoint": "^vpce-[0-9a-f]{8,17}$",
+  "transit-gateway": "^tgw-[0-9a-f]{8,17}$",
+  "customer-gateway": "^cgw-[0-9a-f]{8,17}$",
+  "vpn-gateway": "^vgw-[0-9a-f]{8,17}$",
+  "vpn-connection": "^vpn-[0-9a-f]{8,17}$",
+  "ecr-repo": "^(?:\\d{12}|#\\(custom-\\d+\\))\\.dkr\\.ecr\\.[a-z0-9-]+\\.amazonaws\\.com\\/[a-z0-9._\\/-]+$",
+  "ami": "^ami-[0-9a-f]{8,17}$",
+  "ec2-instance": "^i-[0-9a-f]{8,17}$",
+  "ebs": "^vol-[0-9a-f]{8,17}$",
+  "snapshot": "^snap-[0-9a-f]{8,17}$"
+}
