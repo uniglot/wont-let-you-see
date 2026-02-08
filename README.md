@@ -81,13 +81,13 @@ The plugin hooks into three points of the OpenCode lifecycle:
 2. **After command execution**: Sensitive data in output is masked with tokens
 3. **User messages**: Sensitive data you type is masked before reaching the LLM
 
-Masking is applied to output from `aws`, `terraform`, `kubectl`, and `helm` commands. Other commands are passed through unmodified.
+Masking is applied to output from `aws`, `terraform`, `kubectl`, `helm`, `pulumi`, `tofu`, `terragrunt`, `vault`, and `eksctl` commands. Other commands are passed through unmodified.
 
 Sensitive data is replaced with tokens in the format `#(type-N)`, for example, `vpc-0a1b2c3d4e5f6g7h8` becomes `#(vpc-1)`. The mapping between tokens and real values persists across session restarts.
 
 ## Supported Patterns
 
-**AWS**: ARNs, EKS cluster ARNs, account IDs (contextual), access key IDs, secret access keys, VPC/subnet/security group IDs, internet/NAT/VPN/customer/transit gateways, route tables, network ACLs, EC2 instances, AMIs, EBS volumes, snapshots, ENIs, VPC endpoints, ECR repository URIs
+**AWS**: ARNs, EKS cluster ARNs, account IDs (contextual), access key IDs, secret access keys, VPC/subnet/security group IDs, internet/NAT/VPN/customer/transit gateways, route tables, network ACLs, EC2 instances, AMIs, EBS volumes, snapshots, ENIs, VPC endpoints, ECR repository URIs, RDS instance/cluster resource IDs, RDS proxies, RDS automated snapshots, EFS file systems/mount targets/access points, ElastiCache clusters (contextual), DynamoDB tables (contextual)
 
 **Kubernetes**: EKS cluster API endpoints, node names
 
