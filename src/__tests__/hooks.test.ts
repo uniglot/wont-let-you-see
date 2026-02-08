@@ -300,6 +300,77 @@ describe("tool.execute.before hook", () => {
         );
       }
     });
+
+    it("should detect pulumi commands", async () => {
+      const input = { tool: "bash", sessionID: sessionId, callID: "call-19" };
+      const output = {
+        args: { command: "pulumi up --config vpc_id=#(vpc-1)" },
+      };
+
+      const hook = hooks["tool.execute.before"];
+      if (hook) {
+        await hook(input, output);
+        expect(output.args.command).toBe(
+          "pulumi up --config vpc_id=vpc-abc123",
+        );
+      }
+    });
+
+    it("should detect tofu commands", async () => {
+      const input = { tool: "bash", sessionID: sessionId, callID: "call-20" };
+      const output = {
+        args: { command: "tofu plan -var vpc_id=#(vpc-1)" },
+      };
+
+      const hook = hooks["tool.execute.before"];
+      if (hook) {
+        await hook(input, output);
+        expect(output.args.command).toBe("tofu plan -var vpc_id=vpc-abc123");
+      }
+    });
+
+    it("should detect terragrunt commands", async () => {
+      const input = { tool: "bash", sessionID: sessionId, callID: "call-21" };
+      const output = {
+        args: { command: "terragrunt apply -var vpc_id=#(vpc-1)" },
+      };
+
+      const hook = hooks["tool.execute.before"];
+      if (hook) {
+        await hook(input, output);
+        expect(output.args.command).toBe(
+          "terragrunt apply -var vpc_id=vpc-abc123",
+        );
+      }
+    });
+
+    it("should detect vault commands", async () => {
+      const input = { tool: "bash", sessionID: sessionId, callID: "call-22" };
+      const output = {
+        args: { command: "vault kv get secret/#(vpc-1)" },
+      };
+
+      const hook = hooks["tool.execute.before"];
+      if (hook) {
+        await hook(input, output);
+        expect(output.args.command).toBe("vault kv get secret/vpc-abc123");
+      }
+    });
+
+    it("should detect eksctl commands", async () => {
+      const input = { tool: "bash", sessionID: sessionId, callID: "call-23" };
+      const output = {
+        args: { command: "eksctl get cluster --name #(vpc-1)" },
+      };
+
+      const hook = hooks["tool.execute.before"];
+      if (hook) {
+        await hook(input, output);
+        expect(output.args.command).toBe(
+          "eksctl get cluster --name vpc-abc123",
+        );
+      }
+    });
   });
 });
 
