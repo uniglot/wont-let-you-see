@@ -1,7 +1,8 @@
 import type { Plugin, Hooks, PluginInput } from "@opencode-ai/plugin";
 import { unmask, mask } from "./masker";
 
-const INFRA_COMMAND_PATTERN = /\b(aws|terraform|kubectl|helm)\s/;
+const INFRA_COMMAND_PATTERN =
+  /\b(aws|terraform|kubectl|helm|pulumi|tofu|terragrunt|vault|eksctl)\s/;
 
 export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const infraCommands = new Map<string, boolean>();

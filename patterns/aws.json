@@ -24,5 +24,29 @@
   "ami": "^ami-[0-9a-f]{8,17}$",
   "ec2-instance": "^i-[0-9a-f]{8,17}$",
   "ebs": "^vol-[0-9a-f]{8,17}$",
-  "snapshot": "^snap-[0-9a-f]{8,17}$"
+  "snapshot": "^snap-[0-9a-f]{8,17}$",
+
+  "rds-instance-resource-id": "^db-[A-Z0-9]{26}$",
+  "rds-cluster-resource-id": "^cluster-[A-Z0-9]{26}$",
+  "rds-automated-snapshot": "^rds:[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}$",
+  "rds-proxy": "^prx-[0-9a-f]{17}$",
+  "rds-proxy-endpoint": "^prx-endpoint-[0-9a-f]{17}$",
+
+  "efs-filesystem": "^fs-[0-9a-f]{8,17}$",
+  "efs-mount-target": "^fsmt-[0-9a-f]{8,17}$",
+  "efs-access-point": "^fsap-[0-9a-f]{17}$",
+
+  "elasticache-cluster": {
+    "pattern": "\"CacheClusterId\":\\s*\"([a-z][a-z0-9-]{0,39})\"",
+    "contextual": true
+  },
+  "elasticache-replication-group": {
+    "pattern": "\"ReplicationGroupId\":\\s*\"([a-z][a-z0-9-]{0,39})\"",
+    "contextual": true
+  },
+
+  "dynamodb-table": {
+    "pattern": "\"TableName\":\\s*\"([a-zA-Z0-9._-]{3,255})\"",
+    "contextual": true
+  }
 }

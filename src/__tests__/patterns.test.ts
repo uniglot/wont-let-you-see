@@ -110,6 +110,120 @@ describe("AWS Patterns", () => {
     });
   });
 
+  describe("RDS resources", () => {
+    it("should match RDS instance resource ID", () => {
+      expect(
+        getPattern("rds-instance-resource-id").test(
+          "db-M5OCKISCHAE2MKAFQM2YVLFX3A",
+        ),
+      ).toBe(true);
+    });
+
+    it("should NOT match invalid RDS instance resource ID", () => {
+      expect(getPattern("rds-instance-resource-id").test("db-invalid")).toBe(
+        false,
+      );
+    });
+
+    it("should match RDS cluster resource ID", () => {
+      expect(
+        getPattern("rds-cluster-resource-id").test(
+          "cluster-M5OCKISCHAE2MKAFQM2YVLFX3A",
+        ),
+      ).toBe(true);
+    });
+
+    it("should NOT match invalid RDS cluster resource ID", () => {
+      expect(getPattern("rds-cluster-resource-id").test("cluster-short")).toBe(
+        false,
+      );
+    });
+
+    it("should match RDS automated snapshot", () => {
+      expect(
+        getPattern("rds-automated-snapshot").test(
+          "rds:my-db-instance-2024-01-15-03-30",
+        ),
+      ).toBe(true);
+    });
+
+    it("should NOT match manual snapshot name", () => {
+      expect(
+        getPattern("rds-automated-snapshot").test("my-manual-snapshot"),
+      ).toBe(false);
+    });
+
+    it("should match RDS proxy", () => {
+      expect(getPattern("rds-proxy").test("prx-0123456789abcdef0")).toBe(true);
+    });
+
+    it("should match RDS proxy endpoint", () => {
+      expect(
+        getPattern("rds-proxy-endpoint").test("prx-endpoint-0123456789abcdef0"),
+      ).toBe(true);
+    });
+  });
+
+  describe("EFS resources", () => {
+    it("should match EFS filesystem ID", () => {
+      expect(getPattern("efs-filesystem").test("fs-0123456789abcdef0")).toBe(
+        true,
+      );
+    });
+
+    it("should match EFS mount target ID", () => {
+      expect(
+        getPattern("efs-mount-target").test("fsmt-0123456789abcdef0"),
+      ).toBe(true);
+    });
+
+    it("should match EFS access point ID", () => {
+      expect(
+        getPattern("efs-access-point").test("fsap-0123456789abcdef0"),
+      ).toBe(true);
+    });
+
+    it("should NOT match invalid EFS filesystem ID", () => {
+      expect(getPattern("efs-filesystem").test("fs-invalid")).toBe(false);
+    });
+  });
+
+  describe("ElastiCache resources (contextual)", () => {
+    it("should match CacheClusterId field", () => {
+      expect(
+        getPattern("elasticache-cluster").test(
+          '"CacheClusterId": "my-redis-cluster"',
+        ),
+      ).toBe(true);
+    });
+
+    it("should match ReplicationGroupId field", () => {
+      expect(
+        getPattern("elasticache-replication-group").test(
+          '"ReplicationGroupId": "my-redis-replication"',
+        ),
+      ).toBe(true);
+    });
+
+    it("should NOT match bare cluster name", () => {
+      expect(getPattern("elasticache-cluster").test("my-redis-cluster")).toBe(
+        false,
+      );
+    });
+  });
+
+  describe("DynamoDB resources (contextual)", () => {
+    it("should match TableName field", () => {
+      expect(
+        getPattern("dynamodb-table").test('"TableName": "my-users-table"'),
+      ).toBe(true);
+    });
+
+    it("should NOT match bare table name", () => {
+      expect(getPattern("dynamodb-table").test("my-users-table")).toBe(false);
+    });
+  });
+
   describe("ECR resources", () => {
     it("should match ECR repo URI", () => {
       expect(
