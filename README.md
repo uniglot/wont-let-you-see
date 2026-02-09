@@ -91,7 +91,7 @@ Sensitive data is replaced with tokens in the format `#(type-N)`, for example, `
 
 **Kubernetes**: EKS cluster API endpoints, node names
 
-**Common**: IPv4 addresses (CIDR-aware: `10.0.0.0/16` → `#(ipv4-1)/16`), private key blocks, API keys (contextual), phone numbers (US, KR, international), email addresses, UUIDs, JWTs, base64-encoded secrets (contextual)
+**Common**: IPv4 addresses (CIDR-aware: `10.0.0.0/16` → `#(ipv4-1)/16`), private key blocks, API keys (contextual), phone numbers (contextual: US, KR, international), email addresses, UUIDs, JWTs, base64-encoded secrets (contextual)
 
 See [`patterns/`](patterns/) for the full pattern definitions.
 
@@ -109,6 +109,7 @@ The LLM should only know the token (e.g., `#(vpc-1)`), not the real value.
 
 - **S3 Buckets**: Bucket names are not masked (often public/intentional).
 - **Account IDs**: Only masked in contextual JSON fields. Add to `customPatterns` for full coverage.
+- **Phone Numbers**: Only masked in contextual JSON fields (e.g., `"phone"`, `"tel"`, `"mobile"`). This prevents false positives with Unix timestamps and other numeric data common in infrastructure output.
 
 ## Contributing
 

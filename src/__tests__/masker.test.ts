@@ -247,6 +247,52 @@ describe("masker", () => {
     });
   });
 
+  describe("false positive prevention", () => {
+    it("should NOT mask Unix timestamps as phone numbers", () => {
+      const input = "Created at 1738851600";
+      const result = mask(sessionId, input);
+
+      expect(result).toBe(input);
+    });
+
+    it("should NOT mask partial matches within larger numbers", () => {
+      const input = "ID: 98765432109876";
+      const result = mask(sessionId, input);
+
+      expect(result).toBe(input);
+    });
+
+    it("should NOT mask bare phone numbers without context", () => {
+      const input = "Call 555-234-5678 for support";
+      const result = mask(sessionId, input);
+
+      expect(result).toBe(input);
+    });
+  });
+
+  describe("contextual phone masking", () => {
+    it("should mask US phone numbers in JSON context", () => {
+      const input = '{"phone": "555-234-5678"}';
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/"phone":\s*"#\(phone-us-\d+\)"/);
+    });
+
+    it("should mask Korean phone numbers in JSON context", () => {
+      const input = '{"mobile": "010-1234-5678"}';
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/"mobile":\s*"#\(phone-kr-\d+\)"/);
+    });
+
+    it("should mask international phone numbers in JSON context", () => {
+      const input = '{"tel": "+44 20 7946 0958"}';
+      const result = mask(sessionId, input);
+
+      expect(result).toMatch(/"tel":\s*"#\(phone-international-\d+\)"/);
+    });
+  });
+
   describe("round-trip integrity", () => {
     it("should maintain round-trip integrity for VPC", () => {
       const original = "vpc-1234567890abcdef0";
