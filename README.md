@@ -75,15 +75,35 @@ WONT_LET_YOU_SEE_CUSTOM_PATTERNS="regex:token-[A-Z]{8},123456789012" opencode
 
 ## How It Works
 
-The plugin hooks into three points of the OpenCode lifecycle:
+The plugin hooks into four points of the OpenCode lifecycle:
 
-1. **Before command execution**: Tokens in your command are replaced with original values
-2. **After command execution**: Sensitive data in output is masked with tokens
-3. **User messages**: Sensitive data you type is masked before reaching the LLM
+1. **System prompt injection**: The LLM is informed about masking behavior and how to handle unknown values
+2. **Before command execution**: Tokens in your command are replaced with original values
+3. **After command execution**: Sensitive data in output is masked with tokens
+4. **User messages**: Sensitive data you type is masked before reaching the LLM
 
 Masking is applied to output from `aws`, `terraform`, `kubectl`, `helm`, `pulumi`, `tofu`, `terragrunt`, `vault`, and `eksctl` commands. Other commands are passed through unmodified.
 
 Sensitive data is replaced with tokens in the format `#(type-N)`, for example, `vpc-0a1b2c3d4e5f6g7h8` becomes `#(vpc-1)`. The mapping between tokens and real values persists across session restarts.
+
+### LLM Awareness
+
+The LLM is automatically informed that:
+
+- It sees masked tokens like `#(vpc-1)`, `#(arn-2)`, not real values
+- The plugin unmasks tokens in infrastructure commands automatically
+- When the LLM needs to write a value it hasn't seen, it should use the placeholder format `#(FILL:description)` and ask you to replace it
+
+For example, if you ask the LLM to create a terraform configuration using a VPC you haven't shown it, it will write:
+
+```hcl
+resource "aws_subnet" "example" {
+  vpc_id = "#(FILL:your-vpc-id)"
+  # ...
+}
+```
+
+And instruct you to replace `#(FILL:your-vpc-id)` with your actual VPC ID.
 
 ## Supported Patterns
 

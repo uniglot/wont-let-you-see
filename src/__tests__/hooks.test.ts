@@ -4,6 +4,98 @@ import { plugin } from "../index";
 import { resetConfig } from "../config";
 import type { Hooks } from "@opencode-ai/plugin";
 
+describe("experimental.chat.system.transform hook", () => {
+  const originalEnv = { ...process.env };
+  let hooks: Hooks;
+
+  beforeEach(async () => {
+    process.env.WONT_LET_YOU_SEE_ENABLED = "true";
+    resetConfig();
+    hooks = await plugin({} as any);
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+    resetConfig();
+  });
+
+  it("should inject system prompt when plugin is enabled", async () => {
+    const input = { sessionID: "test-session" };
+    const output = { system: [] as string[] };
+
+    const hook = hooks["experimental.chat.system.transform"];
+    expect(hook).toBeDefined();
+
+    if (hook) {
+      await hook(input, output);
+
+      expect(output.system.length).toBe(1);
+      expect(output.system[0]).toContain("<wont-let-you-see-plugin>");
+      expect(output.system[0]).toContain("#(FILL:description)");
+      expect(output.system[0]).toContain("masked tokens");
+    }
+  });
+
+  it("should not inject system prompt when plugin is disabled", async () => {
+    process.env.WONT_LET_YOU_SEE_ENABLED = "false";
+    resetConfig();
+    hooks = await plugin({} as any);
+
+    const input = { sessionID: "test-session" };
+    const output = { system: [] as string[] };
+
+    const hook = hooks["experimental.chat.system.transform"];
+    if (hook) {
+      await hook(input, output);
+
+      expect(output.system.length).toBe(0);
+    }
+  });
+
+  it("should append to existing system prompts", async () => {
+    const input = { sessionID: "test-session" };
+    const output = { system: ["Existing system prompt"] };
+
+    const hook = hooks["experimental.chat.system.transform"];
+    if (hook) {
+      await hook(input, output);
+
+      expect(output.system.length).toBe(2);
+      expect(output.system[0]).toBe("Existing system prompt");
+      expect(output.system[1]).toContain("<wont-let-you-see-plugin>");
+    }
+  });
+
+  it("should include instructions about token format", async () => {
+    const input = { sessionID: "test-session" };
+    const output = { system: [] as string[] };
+
+    const hook = hooks["experimental.chat.system.transform"];
+    if (hook) {
+      await hook(input, output);
+
+      const systemPrompt = output.system[0];
+      expect(systemPrompt).toContain("#(vpc-1)");
+      expect(systemPrompt).toContain("#(arn-2)");
+      expect(systemPrompt).toContain("#(ipv4-3)");
+    }
+  });
+
+  it("should include instructions about placeholder format", async () => {
+    const input = { sessionID: "test-session" };
+    const output = { system: [] as string[] };
+
+    const hook = hooks["experimental.chat.system.transform"];
+    if (hook) {
+      await hook(input, output);
+
+      const systemPrompt = output.system[0];
+      expect(systemPrompt).toContain("#(FILL:");
+      expect(systemPrompt).toContain("your-vpc-id");
+    }
+  });
+});
+
 describe("tool.execute.before hook", () => {
   const sessionId = "test-session-hooks";
   const originalEnv = { ...process.env };
